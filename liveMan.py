@@ -29,6 +29,8 @@ from protobuf.douyin import *
 
 from urllib3.util.url import parse_url
 
+from db import LiveDatabase
+
 
 def execute_js(js_file: str):
     """
@@ -116,6 +118,7 @@ class DouyinLiveWebFetcher:
         self.__ttwid = None
         self.__room_id = None
         self.session = requests.Session()
+        self.db = LiveDatabase()
         self.live_id = live_id
         self.host = "https://www.douyin.com/"
         self.live_url = "https://live.douyin.com/"
@@ -259,7 +262,7 @@ class DouyinLiveWebFetcher:
         wss += f"&signature={signature}"
         
         headers = {
-            "cookie": f"ttwid={self.ttwid}",
+            "cookie": f"enter_pc_once=1; UIFID_TEMP=3b6adaced0a588dab6f51c731af48a99e86229cd7fa27db4535ff73b415f88b5beffcd25f96948dbad750c70f00e4857b46d9d3216230089ac2d80506cc14f8243b81e1377893f8a9abb8aa6b6466e976dd5422bea41a8f1d393b2d4bda91bb68e69e17696435f0dd0926d9594e73f47; x-web-secsdk-uid=573246b8-2c78-4c32-84d3-ab9be34f159b; douyin.com; s_v_web_id=verify_molidmlf_MPMEvY9U_eqJv_4ThW_9hRl_LydJYyfBsFrc; device_web_cpu_core=8; device_web_memory_size=16; architecture=amd64; is_support_rtm_web_ts=1; hevc_supported=true; dy_swidth=1536; dy_sheight=864; fpk1=U2FsdGVkX1814NP9rAJ+4kFqgVT74OKbHy/w2UdtQz7uBuncpzz6IU8//6i0G1pfs+O+ZkwbYx43Z/6b2FV1Iw==; fpk2=4238b62bcd3c1a9c24ccf656e6ace824; strategyABtestKey=%221777555047.271%22; passport_csrf_token=91e469069833e5e16ef8d91b4adf93e5; passport_csrf_token_default=91e469069833e5e16ef8d91b4adf93e5; UIFID=3b6adaced0a588dab6f51c731af48a99e86229cd7fa27db4535ff73b415f88b5beffcd25f96948dbad750c70f00e4857b46d9d3216230089ac2d80506cc14f821d30d774d198782b2f183e816f97685e440559a3c6f8922cc8f48bd8c8590e831f7630bf15aef993c3cff792e50ce755ec852c620157b4fc2aa24269157ba89c9aa545ad2c304c139dbeeb7d44763bd6cab3fb6a62f4b543bdfce38c5054f95ed7691dee5f3ee681f83000234158d75316eadd16a3bf3ce9854a1ae1dfd84102; stream_recommend_feed_params=%22%7B%5C%22cookie_enabled%5C%22%3Atrue%2C%5C%22screen_width%5C%22%3A1536%2C%5C%22screen_height%5C%22%3A864%2C%5C%22browser_online%5C%22%3Atrue%2C%5C%22cpu_core_num%5C%22%3A8%2C%5C%22device_memory%5C%22%3A16%2C%5C%22downlink%5C%22%3A10%2C%5C%22effective_type%5C%22%3A%5C%224g%5C%22%2C%5C%22round_trip_time%5C%22%3A50%7D%22; bd_ticket_guard_client_web_domain=2; passport_assist_user=CkFC34r-eYdEVUEtsIRR8etlOT1O4P-64NqT4Wj2waS2PERzG0CezBz5TSwgCf-yX05fbuOWQNmLsvwmFHPgrEPDvRpKCjwAAAAAAAAAAAAAUF0ftcadOi-Uwyr89Bujd_SeuTrZYA6tiD6qOryIobftmiA86fkFLSN8SJQispUz9-sQ_JuQDhiJr9ZUIAEiAQPAHYQc; n_mh=EQkS9pKVPyBJLjKnKdU4kezQMmtonkap1urL876xDDI; sid_guard=30f3d6026bb4d067c0b4081793dc47b3%7C1777555078%7C5184000%7CMon%2C+29-Jun-2026+13%3A17%3A58+GMT; uid_tt=9fc0c38b238020457ba18ac3db3ae9b4; uid_tt_ss=9fc0c38b238020457ba18ac3db3ae9b4; sid_tt=30f3d6026bb4d067c0b4081793dc47b3; sessionid=30f3d6026bb4d067c0b4081793dc47b3; sessionid_ss=30f3d6026bb4d067c0b4081793dc47b3; session_tlb_tag=sttt%7C2%7CMPPWAmu00GfAtAgXk9xHs__________XB9SDmMpAfYxM5EpX3NkJDsU01ns9fAaYu0B4E76W93Q%3D; is_staff_user=false; has_biz_token=false; sid_ucp_v1=1.0.0-KDVkMDRiNGY3MGYxZTJhYTU5OWE5ZjVkZWRiM2U3ZDE3MGRhY2RmMDkKIQiukLC_xMzYBhCGrc3PBhjvMSAMMLb9kaIGOAdA9AdIBBoCaGwiIDMwZjNkNjAyNmJiNGQwNjdjMGI0MDgxNzkzZGM0N2Iz; ssid_ucp_v1=1.0.0-KDVkMDRiNGY3MGYxZTJhYTU5OWE5ZjVkZWRiM2U3ZDE3MGRhY2RmMDkKIQiukLC_xMzYBhCGrc3PBhjvMSAMMLb9kaIGOAdA9AdIBBoCaGwiIDMwZjNkNjAyNmJiNGQwNjdjMGI0MDgxNzkzZGM0N2Iz; _bd_ticket_crypt_cookie=7362949f7722b91203160b45bf0d8352; __security_mc_1_s_sdk_sign_data_key_web_protect=0389cc26-4597-b3b0; __security_mc_1_s_sdk_cert_key=629387f9-495c-889e; __security_mc_1_s_sdk_crypt_sdk=cb460e95-4121-8a87; __security_server_data_status=1; login_time=1777555079052; publish_badge_show_info=%220%2C0%2C0%2C1777555079387%22; DiscoverFeedExposedAd=%7B%7D; SelfTabRedDotControl=%5B%7B%22id%22%3A%227616557969206937652%22%2C%22u%22%3A92%2C%22c%22%3A0%7D%2C%7B%22id%22%3A%227613762559497226259%22%2C%22u%22%3A112%2C%22c%22%3A0%7D%2C%7B%22id%22%3A%227426412497073178676%22%2C%22u%22%3A26%2C%22c%22%3A0%7D%2C%7B%22id%22%3A%227591872198793496586%22%2C%22u%22%3A9%2C%22c%22%3A0%7D%2C%7B%22id%22%3A%227461595303297157158%22%2C%22u%22%3A20%2C%22c%22%3A0%7D%2C%7B%22id%22%3A%227350912524990023690%22%2C%22u%22%3A18%2C%22c%22%3A0%7D%2C%7B%22id%22%3A%227441633559661512730%22%2C%22u%22%3A154%2C%22c%22%3A0%7D%2C%7B%22id%22%3A%227347584802515585062%22%2C%22u%22%3A93%2C%22c%22%3A0%7D%2C%7B%22id%22%3A%227439392261869144074%22%2C%22u%22%3A13%2C%22c%22%3A0%7D%2C%7B%22id%22%3A%227468634777730418738%22%2C%22u%22%3A15%2C%22c%22%3A0%7D%2C%7B%22id%22%3A%227333583823206090761%22%2C%22u%22%3A38%2C%22c%22%3A0%7D%5D; ttwid=1%7CV3sylPDxrCqBY5mxT1kHXOYtw49ajVp9WjjBfafvBO8%7C1777555086%7C5f8c1a10c1848cfe5e303a7d76057045905057fa3cca46514489e3bc76dc6071; is_dash_user=1; download_guide=%221%2F20260430%2F0%22; FOLLOW_LIVE_POINT_INFO=%22MS4wLjABAAAAGyRrVAtkZCv1fek-E6yAONipA5tdCJdW76wACE2pCsSZ-BfzWLEHA86gGGoMhFRf%2F1777564800000%2F0%2F0%2F1777556210711%22; FOLLOW_NUMBER_YELLOW_POINT_INFO=%22MS4wLjABAAAAGyRrVAtkZCv1fek-E6yAONipA5tdCJdW76wACE2pCsSZ-BfzWLEHA86gGGoMhFRf%2F1777564800000%2F0%2F1777555610711%2F0%22; bd_ticket_guard_client_data=eyJiZC10aWNrZXQtZ3VhcmQtdmVyc2lvbiI6MiwiYmQtdGlja2V0LWd1YXJkLWl0ZXJhdGlvbi12ZXJzaW9uIjoxLCJiZC10aWNrZXQtZ3VhcmQtcmVlLXB1YmxpYy1rZXkiOiJCT2ZLeEpubkdLamhWNmtUUUtCVFkzekYrclB1Sm5hNHI2RFhHMHNJU0M1WDBGRWJvTHlJS09ZakUvMW1laDJMNldyS2dwNzhrY2xJRUxCeXo2cjBaVWs9IiwiYmQtdGlja2V0LWd1YXJkLXdlYi12ZXJzaW9uIjoyfQ%3D%3D; home_can_add_dy_2_desktop=%221%22; odin_tt=d6459913e8e7a38c6fc4f56a51deb563e65d8cae5f0ede707ba078f0d5bf42f760b2800085baed757b6e948c486a28114c133ecf4c7c75ba6e03da7691fa4201015f8a52666d38f2bec1b9303efe25d0; biz_trace_id=60eac114; sdk_source_info=7e276470716a68645a606960273f276364697660272927676c715a6d6069756077273f276364697660272927666d776a68605a607d71606b766c6a6b5a7666776c7571273f275e58272927666a6b766a69605a696c6061273f27636469766027292762696a6764695a7364776c6467696076273f275e582729277672715a646971273f2763646976602729277f6b5a666475273f2763646976602729276d6a6e5a6b6a716c273f2763646976602729276c6b6f5a7f6367273f27636469766027292771273f273730373d343330303032323234272927676c715a75776a716a666a69273f2763646976602778; bit_env=HPCwqr4BfS2FURTv5hRJ8h_GKDnXjdrzV9e6OK_GiLa0Fb85icGnM-PpfPPfJ_cpkCh4TQwKWgN2AZ4TDuvYORWVvPmM7fON-bmMykl3nDb7sTFDU-i-T753o8GFGLpPrddn4VCSmpaAMDf0WqbYPhdMjtvCqLxfabNfWl6GdVmb43WMNpjvvsMB2CkrDLVQ6UHk2NiKhkCeQ5tzUP5gFWLb6gjS476nrX8CYjtrvNukd13ZWhaWiisTAwVKRXk1n6EAm3SpNlAeRmHu-9-_YKYx473zK6rJOJMpE-u8fZasbct2uCLqijafsLBiGxwmEDJt4FfAYkZDVPgYZoI4IEiXEq94toNU-j7jyhywwVHVQS_28qhBO6pBmOqfkczipGX3X7G51txLAbd_XeVEjPiqQUuDp17Y6JUvWBku6kPTv8bjbjR58vW7ugPqSFdfKdCJz28ZyAraT-UujqwCB7ji2enGCZV_dFQf4HlAH0mdM1TIfv0i7T89AiXLp1Dyb8CA6-MI0FYq6TiwqJ6X08vy8cDFuyssRJcfeu9DrJM%3D; gulu_source_res=eyJwX2luIjoiYzA3ZDQzMmJmM2E3YmU5Mjc0ZjBmODA2OGQwZjQ3N2M1Y2I2Mzc2NjNlZTdhOTBiMjlhZWNjZWE3YzQxMjgxYSJ9; passport_auth_mix_state=l7655ykbtmv70va0oyz6jgnqvsc6jkv7; bd_ticket_guard_client_data_v2=eyJyZWVfcHVibGljX2tleSI6IkJPZkt4Sm5uR0tqaFY2a1RRS0JUWTN6RityUHVKbmE0cjZEWEcwc0lTQzVYMEZFYm9MeUlLT1lqRS8xbWVoMkw2V3JLZ3A3OGtjbElFTEJ5ejZyMFpVaz0iLCJ0c19zaWduIjoidHMuMi5mNmE3OTBjMTk0NzQ0NmZkYTgxYjg0ZGIxYzZmNTdiMTdiZDgyYjJhMmVkMmI5NjkyMjVjY2IwODE5ZTA0MTQxYzRmYmU4N2QyMzE5Y2YwNTMxODYyNGNlZGExNDkxMWNhNDA2ZGVkYmViZWRkYjJlMzBmY2U4ZDRmYTAyNTc1ZCIsInJlcV9jb250ZW50Ijoic2VjX3RzIiwicmVxX3NpZ24iOiJkQ0UwdjJ6UWN0Y3NLRW9veER5Sjg1bklSRit4VzJoZHZGaldhR2lvZUZjPSIsInNlY190cyI6IiNMbk52S0kzekRtbm4wY2wyRVRkTXZVdW81azljTyt2RDVTU1dJK09JazRRekV1ME9vaHFxSzZPVzFBK0MifQ%3D%3D; IsDouyinActive=false",
             'user-agent': self.user_agent,
         }
         self.ws = websocket.WebSocketApp(wss,
@@ -316,24 +319,28 @@ class DouyinLiveWebFetcher:
             ws.send(ack, websocket.ABNF.OPCODE_BINARY)
         
         # 根据消息类别解析消息体
+        parser_map = {
+            'WebcastChatMessage': self._parseChatMsg,  # 聊天消息
+            'WebcastGiftMessage': self._parseGiftMsg,  # 礼物消息
+            'WebcastLikeMessage': self._parseLikeMsg,  # 点赞消息
+            'WebcastMemberMessage': self._parseMemberMsg,  # 进入直播间消息
+            'WebcastSocialMessage': self._parseSocialMsg,  # 关注消息
+            'WebcastRoomUserSeqMessage': self._parseRoomUserSeqMsg,  # 直播间统计
+            'WebcastFansclubMessage': self._parseFansclubMsg,  # 粉丝团消息
+            'WebcastControlMessage': self._parseControlMsg,  # 直播间状态消息
+            'WebcastEmojiChatMessage': self._parseEmojiChatMsg,  # 聊天表情包消息
+            'WebcastRoomStatsMessage': self._parseRoomStatsMsg,  # 直播间统计信息
+            'WebcastRoomMessage': self._parseRoomMsg,  # 直播间信息
+            'WebcastRoomRankMessage': self._parseRankMsg,  # 直播间排行榜信息
+            'WebcastRoomStreamAdaptationMessage': self._parseRoomStreamAdaptationMsg,  # 直播间流配置
+        }
         for msg in response.messages_list:
             method = msg.method
+            parser = parser_map.get(method)
+            if parser is None:
+                continue
             try:
-                {
-                    'WebcastChatMessage': self._parseChatMsg,  # 聊天消息
-                    'WebcastGiftMessage': self._parseGiftMsg,  # 礼物消息
-                    'WebcastLikeMessage': self._parseLikeMsg,  # 点赞消息
-                    'WebcastMemberMessage': self._parseMemberMsg,  # 进入直播间消息
-                    'WebcastSocialMessage': self._parseSocialMsg,  # 关注消息
-                    'WebcastRoomUserSeqMessage': self._parseRoomUserSeqMsg,  # 直播间统计
-                    'WebcastFansclubMessage': self._parseFansclubMsg,  # 粉丝团消息
-                    'WebcastControlMessage': self._parseControlMsg,  # 直播间状态消息
-                    'WebcastEmojiChatMessage': self._parseEmojiChatMsg,  # 聊天表情包消息
-                    'WebcastRoomStatsMessage': self._parseRoomStatsMsg,  # 直播间统计信息
-                    'WebcastRoomMessage': self._parseRoomMsg,  # 直播间信息
-                    'WebcastRoomRankMessage': self._parseRankMsg,  # 直播间排行榜信息
-                    'WebcastRoomStreamAdaptationMessage': self._parseRoomStreamAdaptationMsg,  # 直播间流配置
-                }.get(method)(msg.payload)
+                parser(msg.payload)
             except Exception:
                 pass
     
@@ -347,52 +354,124 @@ class DouyinLiveWebFetcher:
     def _parseChatMsg(self, payload):
         """聊天消息"""
         message = ChatMessage().parse(payload)
+        common = message.common
         user_name = message.user.nick_name
         user_id = message.user.id
         content = message.content
+        self.db.insert_chat(
+            event_time=common.create_time,
+            room_id=common.room_id,
+            msg_id=common.msg_id,
+            user_id=user_id,
+            username=user_name,
+            content=content,
+        )
         print(f"【聊天msg】[{user_id}]{user_name}: {content}")
     
     def _parseGiftMsg(self, payload):
         """礼物消息"""
         message = GiftMessage().parse(payload)
+        common = message.common
         user_name = message.user.nick_name
+        user_id = message.user.id
+        gift_id = message.gift_id or message.gift.id
         gift_name = message.gift.name
         gift_cnt = message.combo_count
+        self.db.insert_gift(
+            event_time=common.create_time or message.send_time,
+            room_id=common.room_id,
+            msg_id=common.msg_id,
+            user_id=user_id,
+            username=user_name,
+            gift_id=gift_id,
+            gift_name=gift_name,
+            gift_count=gift_cnt,
+            diamond_count=message.gift.diamond_count,
+            fan_ticket_count=message.fan_ticket_count,
+        )
         print(f"【礼物msg】{user_name} 送出了 {gift_name}x{gift_cnt}")
     
     def _parseLikeMsg(self, payload):
         '''点赞消息'''
         message = LikeMessage().parse(payload)
+        common = message.common
         user_name = message.user.nick_name
+        user_id = message.user.id
         count = message.count
+        self.db.insert_like(
+            event_time=common.create_time,
+            room_id=common.room_id,
+            msg_id=common.msg_id,
+            user_id=user_id,
+            username=user_name,
+            like_count=count,
+        )
         print(f"【点赞msg】{user_name} 点了{count}个赞")
     
     def _parseMemberMsg(self, payload):
         '''进入直播间消息'''
         message = MemberMessage().parse(payload)
+        common = message.common
         user_name = message.user.nick_name
         user_id = message.user.id
-        gender = ["女", "男"][message.user.gender]
+        gender = {0: "女", 1: "男"}.get(message.user.gender, "未知")
+        self.db.insert_member(
+            event_time=common.create_time,
+            room_id=common.room_id,
+            msg_id=common.msg_id,
+            user_id=user_id,
+            username=user_name,
+            gender=message.user.gender,
+            enter_type=message.enter_type,
+            action=message.action,
+        )
         print(f"【进场msg】[{user_id}][{gender}]{user_name} 进入了直播间")
     
     def _parseSocialMsg(self, payload):
         '''关注消息'''
         message = SocialMessage().parse(payload)
+        common = message.common
         user_name = message.user.nick_name
         user_id = message.user.id
+        self.db.insert_follow(
+            event_time=common.create_time,
+            room_id=common.room_id,
+            msg_id=common.msg_id,
+            user_id=user_id,
+            username=user_name,
+        )
         print(f"【关注msg】[{user_id}]{user_name} 关注了主播")
     
     def _parseRoomUserSeqMsg(self, payload):
         '''直播间统计'''
         message = RoomUserSeqMessage().parse(payload)
+        common = message.common
         current = message.total
         total = message.total_pv_for_anchor
+        self.db.insert_room_stats(
+            event_time=common.create_time,
+            room_id=common.room_id,
+            msg_id=common.msg_id,
+            current_user=current,
+            total_user=message.total_user_str,
+            total_pv=total,
+        )
         print(f"【统计msg】当前观看人数: {current}, 累计观看人数: {total}")
     
     def _parseFansclubMsg(self, payload):
         '''粉丝团消息'''
         message = FansclubMessage().parse(payload)
+        common = message.common_info
         content = message.content
+        self.db.insert_fansclub(
+            event_time=common.create_time,
+            room_id=common.room_id,
+            msg_id=common.msg_id,
+            user_id=message.user.id,
+            username=message.user.nick_name,
+            fansclub_type=message.type,
+            content=content,
+        )
         print(f"【粉丝团msg】 {content}")
     
     def _parseEmojiChatMsg(self, payload):
@@ -408,21 +487,59 @@ class DouyinLiveWebFetcher:
         message = RoomMessage().parse(payload)
         common = message.common
         room_id = common.room_id
+        self.db.insert_room_info(
+            event_time=common.create_time,
+            room_id=room_id,
+            msg_id=common.msg_id,
+            content=message.content,
+            room_message_type=message.roommessagetype,
+            biz_scene=message.biz_scene,
+        )
         print(f"【直播间msg】直播间id:{room_id}")
     
     def _parseRoomStatsMsg(self, payload):
         message = RoomStatsMessage().parse(payload)
+        common = message.common
         display_long = message.display_long
+        self.db.insert_room_stats(
+            event_time=common.create_time,
+            room_id=common.room_id,
+            msg_id=common.msg_id,
+            display_short=message.display_short,
+            display_middle=message.display_middle,
+            display_long=display_long,
+            display_value=message.display_value,
+            total=message.total,
+        )
         print(f"【直播间统计msg】{display_long}")
     
     def _parseRankMsg(self, payload):
         message = RoomRankMessage().parse(payload)
+        common = message.common
         ranks_list = message.ranks_list
+        for rank_no, rank_item in enumerate(ranks_list, start=1):
+            self.db.insert_rank(
+                event_time=common.create_time,
+                room_id=common.room_id,
+                msg_id=common.msg_id,
+                rank_type="room",
+                rank_no=rank_no,
+                user_id=rank_item.user.id,
+                username=rank_item.user.nick_name,
+                score=rank_item.score_str,
+            )
         print(f"【直播间排行榜msg】{ranks_list}")
     
     def _parseControlMsg(self, payload):
         '''直播间状态消息'''
         message = ControlMessage().parse(payload)
+        common = message.common
+        self.db.insert_control(
+            event_time=common.create_time,
+            room_id=common.room_id,
+            msg_id=common.msg_id,
+            status=message.status,
+        )
         
         if message.status == 3:
             print("直播间已结束")
