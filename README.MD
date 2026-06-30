@@ -15,6 +15,68 @@
 - `protoc`版本：`libprotoc 25.1`
 - NodeJs v18.2.0
 
+## 使用方法
+
+### main.py：抓取直播弹幕并保存数据
+
+`main.py` 是项目的运行入口，会连接指定抖音直播间，实时抓取聊天、礼物、点赞、进场、统计等消息，并把本场直播数据保存到 SQLite 数据库中。
+
+1. 安装依赖：
+
+```bash
+pip install -r requirements.txt
+```
+
+2. 打开 `main.py`，修改 `live_id` 为要抓取的直播间 ID：
+
+```python
+live_id = '598666330345'
+```
+
+3. 运行抓取脚本：
+
+```bash
+python main.py
+```
+
+运行后会自动创建本场直播目录，默认位于 `data/日期/房间号_开始时间/`，主要文件包括：
+
+- `live.db`：本场直播 SQLite 数据库。
+- `report.md`：统计报告输出文件占位。
+- `summary.json`：摘要数据占位。
+- `logs/record.log`：运行日志。
+
+控制台会输出本场直播目录和 SQLite 数据库路径，例如：
+
+```text
+【√】本场直播目录: data/2026-06-29/598666330345_20260629_120000
+【√】SQLite数据库: data/2026-06-29/598666330345_20260629_120000/live.db
+```
+
+### report.py：基于 SQLite 生成统计报告
+
+`report.py` 用于读取 `main.py` 抓取生成的 `live.db`，并输出 Markdown 统计报告。报告包含核心指标、礼物排行榜、用户贡献榜、在线人数变化和 PK 时间轴。
+
+基础用法是在 Python 中指定数据库路径和报告输出路径：
+
+```python
+from report import LiveReport
+
+report = LiveReport("data/2026-06-29/598666330345_20260629_120000/live.db")
+try:
+    report.generate_markdown("data/2026-06-29/598666330345_20260629_120000/report.md")
+finally:
+    report.close()
+```
+
+也可以在交互式命令中直接生成：
+
+```bash
+python -c "from report import LiveReport; r=LiveReport('data/2026-06-29/598666330345_20260629_120000/live.db'); r.generate_markdown('data/2026-06-29/598666330345_20260629_120000/report.md'); r.close()"
+```
+
+请把示例中的 `data/2026-06-29/598666330345_20260629_120000/live.db` 替换为实际运行 `main.py` 后控制台输出的 SQLite 数据库路径。
+
 
 ## 有效测试：
 

@@ -13,11 +13,11 @@ from typing import Any, Optional
 class LiveDatabase:
     """抖音直播数据 SQLite 数据库封装。"""
 
-    def __init__(self, db_path: str = "data/live.db") -> None:
+    def __init__(self, db_path: str | Path) -> None:
         """
         初始化数据库连接并自动建表。
 
-        :param db_path: SQLite 数据库文件路径，默认写入 data/live.db。
+        :param db_path: 当前直播场次的 SQLite 数据库文件路径。
         """
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)

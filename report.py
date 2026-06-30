@@ -14,7 +14,7 @@ from db import LiveDatabase
 class LiveReport:
     """基于 SQLite 的直播数据统计报表。"""
 
-    def __init__(self, db_path: str = "data/live.db") -> None:
+    def __init__(self, db_path: str | Path) -> None:
         """
         初始化报表读取器。
 
