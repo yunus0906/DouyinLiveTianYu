@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS gift (
     diamond_count INTEGER NOT NULL DEFAULT 0,
     fan_ticket_count INTEGER NOT NULL DEFAULT 0,
     total_value INTEGER NOT NULL DEFAULT 0,
+    user_home_url TEXT,
     created_at INTEGER NOT NULL
 );
 
@@ -55,6 +56,7 @@ CREATE TABLE IF NOT EXISTS like (
 CREATE TABLE IF NOT EXISTS member (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     event_time INTEGER NOT NULL,
+    level INTEGER NOT NULL DEFAULT 0,
     room_id TEXT,
     msg_id TEXT,
     user_id TEXT,

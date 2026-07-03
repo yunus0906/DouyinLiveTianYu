@@ -21,6 +21,8 @@ import urllib.parse
 from contextlib import contextmanager
 from unittest.mock import patch
 
+from datetime import datetime
+
 import requests
 import websocket
 from py_mini_racer import MiniRacer
@@ -379,39 +381,72 @@ class DouyinLiveWebFetcher:
         common = message.common
         user_name = message.user.nick_name
         user_id = message.user.id
+        sec_uid = message.user.sec_uid
         content = message.content
         self.db.insert_chat(
             event_time=common.create_time,
             room_id=common.room_id,
             msg_id=common.msg_id,
-            user_id=user_id,
+            user_id=sec_uid,
             username=user_name,
             content=content,
         )
-        print(f"【聊天msg】[{user_id}]{user_name}: {content}")
+        print(f"【聊天msg】[{sec_uid}]{user_name}: {content}")
     
     def _parseGiftMsg(self, payload):
         """礼物消息"""
         message = GiftMessage().parse(payload)
+
+        sec_uid = message.user.sec_uid
+        diamond = message.gift.diamond_count
+        date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
         common = message.common
         user_name = message.user.nick_name
-        user_id = message.user.id
         gift_id = message.gift_id or message.gift.id
         gift_name = message.gift.name
         gift_cnt = message.combo_count
+
+        # 连击礼物只在结束时记录一次，数量优先取最终累计值。
+        if message.gift.combo:
+            if message.repeat_end == 0:
+                return
+            gift_cnt = (
+                message.total_count
+                or message.repeat_count
+                or message.group_count
+                or message.combo_count
+                or 1
+            )
+        else:
+            gift_cnt = (
+                message.group_count
+                or message.repeat_count
+                or message.total_count
+                or message.combo_count
+                or 1
+            )
+
+        if sec_uid and sec_uid != "":
+            user_home_url = f"https://www.douyin.com/user/{sec_uid}"
+        else:
+            user_id = message.user.id
+            user_home_url = f"https://www.douyin.com/user/{user_id}"
+
         self.db.insert_gift(
             event_time=common.create_time or message.send_time,
             room_id=common.room_id,
             msg_id=common.msg_id,
-            user_id=user_id,
+            user_id=sec_uid,
             username=user_name,
             gift_id=gift_id,
             gift_name=gift_name,
             gift_count=gift_cnt,
             diamond_count=message.gift.diamond_count,
             fan_ticket_count=message.fan_ticket_count,
+            user_home_url=user_home_url,
         )
-        print(f"【礼物msg】{user_name} 送出了 {gift_name}x{gift_cnt}")
+        print(f"【礼物msg】[{date_time}]{user_name} 送出了 {gift_name}(价值: {diamond}钻) x {gift_cnt}个")
     
     def _parseLikeMsg(self, payload):
         '''点赞消息'''
@@ -419,12 +454,13 @@ class DouyinLiveWebFetcher:
         common = message.common
         user_name = message.user.nick_name
         user_id = message.user.id
+        sec_uid = message.user.sec_uid
         count = message.count
         self.db.insert_like(
             event_time=common.create_time,
             room_id=common.room_id,
             msg_id=common.msg_id,
-            user_id=user_id,
+            user_id=sec_uid,
             username=user_name,
             like_count=count,
         )
@@ -436,18 +472,24 @@ class DouyinLiveWebFetcher:
         common = message.common
         user_name = message.user.nick_name
         user_id = message.user.id
+        sec_uid = message.user.sec_uid
+        level=message.user.pay_grade.level
         gender = {0: "女", 1: "男"}.get(message.user.gender, "未知")
+        if user_id == "111111":
+            gender="位置"
+            return
         self.db.insert_member(
             event_time=common.create_time,
+            level=level,
             room_id=common.room_id,
             msg_id=common.msg_id,
-            user_id=user_id,
+            user_id=sec_uid,
             username=user_name,
-            gender=message.user.gender,
+            gender=gender,
             enter_type=message.enter_type,
             action=message.action,
         )
-        print(f"【进场msg】[{user_id}][{gender}]{user_name} 进入了直播间")
+        print(f"【进场msg】[{level}级][{user_name}] 进入了直播间")
     
     def _parseSocialMsg(self, payload):
         '''关注消息'''
@@ -455,11 +497,12 @@ class DouyinLiveWebFetcher:
         common = message.common
         user_name = message.user.nick_name
         user_id = message.user.id
+        sec_uid = message.user.sec_uid
         self.db.insert_follow(
             event_time=common.create_time,
             room_id=common.room_id,
             msg_id=common.msg_id,
-            user_id=user_id,
+            user_id=sec_uid,
             username=user_name,
         )
         print(f"【关注msg】[{user_id}]{user_name} 关注了主播")
@@ -485,11 +528,12 @@ class DouyinLiveWebFetcher:
         message = FansclubMessage().parse(payload)
         common = message.common_info
         content = message.content
+        sec_uid = message.user.sec_uid
         self.db.insert_fansclub(
             event_time=common.create_time,
             room_id=common.room_id,
             msg_id=common.msg_id,
-            user_id=message.user.id,
+            user_id=sec_uid,
             username=message.user.nick_name,
             fansclub_type=message.type,
             content=content,

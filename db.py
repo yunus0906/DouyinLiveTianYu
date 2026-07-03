@@ -72,6 +72,7 @@ class LiveDatabase:
             username TEXT,
             gift_id TEXT,
             gift_name TEXT,
+            user_home_url TEXT,
             gift_count INTEGER NOT NULL DEFAULT 0,
             diamond_count INTEGER NOT NULL DEFAULT 0,
             fan_ticket_count INTEGER NOT NULL DEFAULT 0,
@@ -97,6 +98,7 @@ class LiveDatabase:
             msg_id TEXT,
             user_id TEXT,
             username TEXT,
+            level INTEGER NOT NULL DEFAULT 0,
             gender INTEGER,
             enter_type INTEGER,
             action INTEGER,
@@ -281,6 +283,7 @@ class LiveDatabase:
         gift_count: int,
         diamond_count: int = 0,
         fan_ticket_count: int = 0,
+        user_home_url: str = "",
     ) -> Optional[int]:
         """写入礼物消息。"""
         now = self._now_ms()
@@ -290,13 +293,13 @@ class LiveDatabase:
             INSERT INTO gift (
                 event_time, room_id, msg_id, user_id, username, gift_id,
                 gift_name, gift_count, diamond_count, fan_ticket_count,
-                total_value, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                total_value, created_at, user_home_url
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (event_time or now, self._to_text(room_id), self._to_text(msg_id),
              self._to_text(user_id), username, self._to_text(gift_id), gift_name,
              gift_count or 0, diamond_count or 0, fan_ticket_count or 0,
-             total_value, now),
+             total_value, now, user_home_url),
         )
         self._insert_ref_event(
             "gift", event_time, room_id, user_id, username, row_id,
@@ -325,6 +328,7 @@ class LiveDatabase:
         room_id: Any,
         msg_id: Any,
         user_id: Any,
+        level: Optional[int],
         username: str,
         gender: Optional[int],
         enter_type: Optional[int],
@@ -335,14 +339,14 @@ class LiveDatabase:
         row_id = self.execute(
             """
             INSERT INTO member (
-                event_time, room_id, msg_id, user_id, username,
+                event_time, room_id, msg_id, user_id, username, level,
                 gender, enter_type, action, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (event_time or now, self._to_text(room_id), self._to_text(msg_id),
-             self._to_text(user_id), username, gender, enter_type, action, now),
+             self._to_text(user_id), username, level or 0, gender, enter_type, action, now),
         )
-        self._insert_ref_event("member", event_time, room_id, user_id, username, row_id)
+        self._insert_ref_event("member", event_time, room_id, user_id, username, level, row_id)
         return row_id
 
     def insert_follow(

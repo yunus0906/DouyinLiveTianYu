@@ -65,7 +65,7 @@ class LiveSession:
         self.db_path = self.workspace / "live.db"
         self.report_path = self.workspace / "report.md"
         self.summary_path = self.workspace / "summary.json"
-        self.ai_analysis_path = self.workspace / "ai_analysis.md"
+        self.ai_analysis_path = self.workspace / "analysis.md"
         self.config_path = self.workspace / "config.json"
         self.screenshots_path = self.workspace / "screenshots"
         self.clips_path = self.workspace / "clips"
