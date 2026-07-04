@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Douyin Live Analytics Dashboard</title>
+  <link rel="stylesheet" href="css/dark.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar glass-panel">
+      <div class="brand">
+        <span class="brand-mark"></span>
+        <div>
+          <h1>直播复盘数据分析</h1>
+          <p>SQLite 本地解析 · 零后端 · 实时 Dashboard</p>
+        </div>
+      </div>
+      <section id="uploadZone" class="upload-zone" tabindex="0" aria-label="上传 live.db 数据库">
+        <input id="dbFile" type="file" accept=".db,.sqlite,.sqlite3,application/vnd.sqlite3,application/octet-stream" hidden>
+        <div class="upload-icon">DB</div>
+        <div>
+          <strong>上传 live.db</strong>
+          <span>点击或拖拽 SQLite 文件到此处</span>
+        </div>
+      </section>
+      <div class="toolbar-actions">
+        <button id="fullscreenPage" class="ghost-button" type="button">全屏大屏</button>
+        <button id="resetFilters" class="ghost-button" type="button">重置筛选</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="status-strip glass-panel">
+        <div>
+          <span class="status-dot" id="statusDot"></span>
+          <strong id="statusText">等待上传数据库</strong>
+        </div>
+        <div id="schemaSummary">未加载</div>
+      </section>
+
+      <section id="kpiGrid" class="kpi-grid"></section>
+
+      <section class="panel chart-panel fade-in">
+        <div class="panel-head">
+          <div>
+            <h2>直播趋势分析</h2>
+            <p>按分钟聚合消费、互动、在线指标</p>
+          </div>
+          <div class="tabs" role="tablist" aria-label="趋势类型">
+            <button class="tab active" data-trend="consume" type="button">消费趋势</button>
+            <button class="tab" data-trend="interaction" type="button">互动趋势</button>
+            <button class="tab" data-trend="online" type="button">在线趋势</button>
+          </div>
+        </div>
+        <div id="trendChart" class="chart chart-lg"></div>
+      </section>
+
+      <section class="split-grid">
+        <article class="panel fade-in">
+          <div class="panel-head compact">
+            <div>
+              <h2>聊天记录</h2>
+              <p id="chatCountLabel">0 条</p>
+            </div>
+            <select id="chatSort" class="control-input" aria-label="聊天排序">
+              <option value="asc">时间升序</option>
+              <option value="desc">时间降序</option>
+            </select>
+          </div>
+          <div class="filter-row">
+            <input id="chatUserSearch" class="control-input" placeholder="搜索用户">
+            <input id="chatKeywordSearch" class="control-input" placeholder="搜索关键词">
+          </div>
+          <div id="chatList" class="virtual-list chat-list"></div>
+        </article>
+
+        <article class="panel fade-in">
+          <div class="panel-head compact">
+            <div>
+              <h2>礼物记录</h2>
+              <p id="giftCountLabel">0 条</p>
+            </div>
+            <select id="giftSort" class="control-input" aria-label="礼物排序">
+              <option value="time-desc">时间降序</option>
+              <option value="time-asc">时间升序</option>
+              <option value="value-desc">价值降序</option>
+            </select>
+          </div>
+          <div class="filter-row">
+            <input id="giftUserSearch" class="control-input" placeholder="搜索用户">
+            <input id="giftNameSearch" class="control-input" placeholder="搜索礼物">
+          </div>
+          <div id="giftList" class="virtual-list gift-list"></div>
+        </article>
+      </section>
+
+      <section class="quad-grid">
+        <article class="panel fade-in word-panel">
+          <div class="panel-head compact">
+            <div>
+              <h2>高频词分析</h2>
+              <p>Top100 评论关键词</p>
+            </div>
+          </div>
+          <div id="wordCloudChart" class="chart chart-md"></div>
+          <div id="wordRank" class="rank-list"></div>
+        </article>
+
+        <article class="panel fade-in">
+          <div class="panel-head compact">
+            <div>
+              <h2>礼物排行榜</h2>
+              <p>送礼总价值 Top100</p>
+            </div>
+          </div>
+          <div id="giftRankChart" class="chart chart-sm"></div>
+          <div id="giftRankList" class="rank-list"></div>
+        </article>
+
+        <article class="panel fade-in">
+          <div class="panel-head compact">
+            <div>
+              <h2>评论排行榜</h2>
+              <p>评论次数 Top100</p>
+            </div>
+          </div>
+          <div id="commentRankList" class="rank-list tall"></div>
+        </article>
+
+        <article class="panel fade-in">
+          <div class="panel-head compact">
+            <div>
+              <h2>礼物构成</h2>
+              <p>价值占比</p>
+            </div>
+          </div>
+          <div id="giftPieChart" class="chart chart-md"></div>
+        </article>
+      </section>
+
+      <section class="split-grid bottom-grid">
+        <article class="panel fade-in">
+          <div class="panel-head compact">
+            <div>
+              <h2>在线人数分析</h2>
+              <p id="onlineSummary">等待数据</p>
+            </div>
+          </div>
+          <div id="onlineAreaChart" class="chart chart-md"></div>
+        </article>
+        <article class="panel fade-in">
+          <div class="panel-head compact">
+            <div>
+              <h2>直播时间轴</h2>
+              <p>自动识别关键事件</p>
+            </div>
+          </div>
+          <div id="timeline" class="timeline"></div>
+        </article>
+      </section>
+
+      <section id="detailDrawer" class="detail-drawer" aria-live="polite">
+        <div class="drawer-head">
+          <div>
+            <h2 id="drawerTitle">联动明细</h2>
+            <p id="drawerSubtitle">点击词语、用户或礼物查看详情</p>
+          </div>
+          <button id="closeDrawer" class="ghost-button" type="button">关闭</button>
+        </div>
+        <div id="drawerList" class="virtual-list drawer-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <template id="emptyStateTemplate">
+    <div class="empty-state">
+      <strong>暂无数据</strong>
+      <span>上传 live.db 后将自动分析并渲染。</span>
+    </div>
+  </template>
+
+  <script src="libs/dayjs.min.js"></script>
+  <script src="libs/echarts.min.js"></script>
+  <script src="libs/echarts-wordcloud.min.js"></script>
+  <script src="libs/sql-wasm.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

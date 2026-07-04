@@ -10,7 +10,7 @@ from liveMan import DouyinLiveWebFetcher
 from LiveSession import LiveSession
 
 if __name__ == '__main__':
-    live_id = '537251005287'
+    live_id = '950963201795'
     session = LiveSession(room_id=live_id)
     room = DouyinLiveWebFetcher(live_id, live_session=session)
     # room.get_room_status() # 失效
